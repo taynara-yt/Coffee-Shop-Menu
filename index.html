@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="style.css">
+    <title>Coffee Shop Menu</title>
+    <script type="text/javascript" src="jquery.js"></script>
+	<script type="text/javascript">
+		// Erro genérico de callback para transações de banco de dados
+		var errCallback = function(){
+			alert("Há um erro de banco de dados!");
+		}
+	
+		// Abrir / inicializar o banco de dados - isso vai falhar em navegadores como firefox e IE
+		var db = openDatabase("Menu", "1.0", "Café KOONP", 32678);
+	 
+		// Criar a tabela de contatos se necessário
+		db.transaction(function(transaction){
+			transaction.executeSql("CREATE TABLE IF NOT EXISTS Menu (" +
+				"id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT," +
+				"nome TEXT NOT NULL, tamanho TEXT NOT NULL, preco INTEGER NOT NULL);");
+		});
+	
+		// Essa é a função salvar
+		var salvarmenu = function(nome, tamanho, preco, successCallback){
+			db.transaction(function(transaction){
+				transaction.executeSql(("INSERT INTO Menu (nome, tamanho, preco) VALUES (?, ?, ?);"), 
+				[nome, tamanho, preco], function(transaction, results){successCallback(results);}, errCallback);
+			});
+		};
+		
+		// Esta é uma função de carga, que carrega todo menu
+		var carregamenu = function(nome, successCallback){
+			db.transaction(function(transaction){
+				transaction.executeSql(("SELECT * FROM Menu WHERE nome=?"), [nome],
+					function(transaction, results){successCallback(results);}, errCallback);
+				});
+		};
+	
+		// evento documento okay
+		$(function(){
+			var form = $("form");
+		
+			// Callback ao carregar dados 
+			var atualizapagina = function(results){
+				var list = $("#menu-lista");
+				list.empty();
+				console.dir(results);
+				if (results.rows.length==0){
+					alert("Não há menu.");
+				} else {
+					$.each(results.rows, function(rowIndex){
+						var linha = results.rows.item(rowIndex);
+list.append( "<li>" + linha.nome + ", " + linha.tamanho + ", " + linha.preco + "</li>");
+					});
+				}
+			};
+		 
+			// Substituir o formulário padrão apresentar em favor do nosso código
+			form.submit(function(event){
+				event.preventDefault();
+				salvarmenu($('#nome').val(), $('#tamanho').val(), $('#preco').val(), function(){
+					alert("Menu KOONP: " + $('#nome').val() + " salvos!");
+				})
+			});
+			
+			// Lista menu vinculados a um botão na página
+			$('#mostre-me').click(function(){carregamenu($('#onde').val(), atualizapagina);});
+		});
+
+function recuperar()
+
+{
+
+
+ db.transaction( function (tx) {
+    tx.executeSql(
+       'SELECT * FROM Menu',
+       [],
+       function (tx, results)
+       {
+          var len = results.rows.length;
+          alert('Existem ' + len + ' registros!');
+          for (var i = 0; i < len; i++)
+          {
+             var row = results.rows.item(i);
+             alert(row.id + ': ' + row.nome);
+          }
+       },
+       function (tx, error)
+       {
+          alert('ooops ' + error.message);
+       }
+       );
+ });
+ }
+
+
+
+ function excluirmenu()
+ 
+{
+var db = openDatabase(
+     'menu', 
+     '1.0', 
+     'Café KOONP', 32678
+     );
+
+ db.transaction( function (tx) {
+    tx.executeSql(
+       'DROP TABLE menu',
+       [],
+       function (tx, results)
+       {
+          alert('Tabela excluída');
+       },
+       function (tx, error)
+       {
+          alert('ooops ' + error.message);
+       }
+       );
+ }); 
+}
+
+	</script>
+</head>
+ 
+<body>
+	<main class="menu">
+		<div class="koop-box">
+			<form class="koop"> 
+				<div class="campo">
+					<h1 id="titulo"><strong>Café KOONP</strong></h1>
+					<p id="subtitulo"><strong>Preencha os campos para inserir novo café ao menu!</strong> </p>
+				</div>
+	
+				<fieldset class="grupo">
+					<div class="campo">
+						<label for="nome"><strong>Nome:</strong></label>
+						<input type="text" name="nome" id="nome" class="name" required>
+					</div>
+		
+					<div class="campo">
+						<label for="tamanho"><strong>Tamanho:</strong></label>
+						<input type="text" name="tamanho" id="tamanho" class="tamanho" required>
+					</div>
+					
+					<div class="campo">
+						<label for="preco"><strong>Preço:</strong></label>
+						<input type="text" name="preco" id="preco" class="preco" required>
+					</div>
+					
+				</fieldset>
+		
+				<button class="botao" type="submit" onsubmit="">Concluído</button>
+		
+				<div class="campo">
+					<p id="subtitulo"><strong>Digite um nome de um café para verificar sua existência no menu:</strong> </p>
+				</div>
+		
+				<fieldset class="grupo">
+					<div class="campo">
+						<label for="onde"><strong>Checar Nome: </strong></label>
+						<input type="text" name="onde" id="onde">
+						
+					</div>
+				</fieldset>
+				<button class="botao" type="button" id="mostre-me">Ver menu</button>
+	
+					
+				<h1 class="lista""><strong>Lista Menu</strong></h1>
+	
+				<fieldset>
+					<ul id="menu-lista"><!-- atualiza a pagina --></ul>
+						<p><strong>Clique no botão para saber o que está disponível no menu.</strong></p>
+						<br>
+							 <button class="botao" onclick="recuperar()">Pressione-me</button>
+			
+						<p><strong>Clique no botão para excluir o Menu.(Atenção! A exclusão é permanente!)</strong></p>
+						<br>
+							
+				</fieldset>
+					<button class="botao" onclick="excluirtabela()">Excluir</button>
+			</form>
+		</div>
+		
+	</main>
+</body>
+</html>
