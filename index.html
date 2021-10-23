@@ -32,13 +32,22 @@
 			});
 		};
 		
-		// Esta é uma função de carga, que carrega todo menu
+		// Esta é uma função de carga, que carrega todo menu, pesquisa um café especifico a partir do nome
 		var carregamenu = function(nome, successCallback){
 			db.transaction(function(transaction){
 				transaction.executeSql(("SELECT * FROM Menu WHERE nome=?"), [nome],
 					function(transaction, results){successCallback(results);}, errCallback);
 				});
 		};
+
+		// Realiza a exclusão de um café expecifico
+		var excluirEspecifico = function(nome, successCallback){
+			db.transaction(function(transaction){
+				transaction.executeSql(("DELETE FROM Menu WHERE nome=?"), [nome],
+					function(transaction, results){successCallback(results);}, errCallback);
+				});
+		};
+
 	
 		// evento documento okay
 		$(function(){
@@ -69,12 +78,26 @@ list.append( "<li>" + linha.nome + ", " + linha.tamanho + ", " + linha.preco + "
 			
 			// Lista menu vinculados a um botão na página
 			$('#mostre-me').click(function(){carregamenu($('#onde').val(), atualizapagina);});
+
+			//Callback ao carregar dados
+		var excluirPesquisa = function(results){
+			if(results){
+				alert('O registro foi excluído!');
+			}else{
+				alert('Erro: ' + error.message);
+			}
+		};
+
+		
+			// Lista de cafés vinculados a um botão na página
+			$('#excluirPesquisado').click(function(){excluirEspecifico($('#onde').val(), excluirPesquisa);});
+
+
 		});
 
+		
 function recuperar()
-
 {
-
 
  db.transaction( function (tx) {
     tx.executeSql(
@@ -92,7 +115,7 @@ function recuperar()
        },
        function (tx, error)
        {
-          alert('ooops ' + error.message);
+          alert('Erro: ' + error.message);
        }
        );
  });
@@ -101,7 +124,6 @@ function recuperar()
 
 
  function excluirmenu()
- 
 {
 var db = openDatabase(
      'menu', 
@@ -163,21 +185,35 @@ var db = openDatabase(
 		
 				<fieldset class="grupo">
 					<div class="campo">
-						<label for="onde"><strong>Checar Nome: </strong></label>
+						<label for="onde"><strong>Checar Nome de um Café: </strong></label>
 						<input type="text" name="onde" id="onde">
 						
 					</div>
 				</fieldset>
 				<button class="botao" type="button" id="mostre-me">Ver menu</button>
 	
+				
+				<fieldset class="grupo">
+					<div class="campo">
+						<label for="onde"><strong>Excluir café checado no menu:</strong></label>
+					</div>
+				</fieldset>
+				<button class="botao" type="button" id="excluirPesquisado">Excluir</button>
+	
+
+
 					
 				<h1 class="lista""><strong>Lista Menu</strong></h1>
-	
+			
+
+
 				<fieldset>
 					<ul id="menu-lista"><!-- atualiza a pagina --></ul>
 						<p><strong>Clique no botão para saber o que está disponível no menu.</strong></p>
 						<br>
 							 <button class="botao" onclick="recuperar()">Pressione-me</button>
+
+							
 			
 						<p><strong>Clique no botão para excluir o Menu.(Atenção! A exclusão é permanente!)</strong></p>
 						<br>
